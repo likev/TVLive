@@ -4,7 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <script type="text/javascript" src="ckplayer/ckplayer.js" charset="utf-8"></script>
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="shortcut icon" href="worldcup.ico" >
     <!-- Bootstrap CSS -->
@@ -48,7 +48,7 @@
             </ul>
             <form class="form-inline my-4 my-lg-0">
                 <input id="playUrl" class="form-control mr-sm-4" placeholder="直播源地址"/>
-                <button id="playBtn" class="btn btn-outline-success my-4 my-sm-0" >播放</button>
+                <button id="playBtn" type="button" class="btn btn-outline-success my-4 my-sm-0" >播放</button>
               </form>
           </div>
         </nav>
@@ -56,7 +56,9 @@
        <div class="container" style="height: 100vh;">
        <div class="row" style="height: 2vh;"></div>
         <div class="row" style="height: 70vh; " >
-            <div id="a1" class="col-sm-8 col-xs-8 col-sm-8 offset-sm-2 offset-md-2 offset-lg-2 col-lg-8" ></div>
+            <div id="a1" class="col-sm-8 col-xs-8 col-sm-8 offset-sm-2 offset-md-2 offset-lg-2 col-lg-8" >
+				<video id="video" controls></video>
+			</div>
         </div>
         <div class="row">
             <div class="col-sm-8 col-xs-8 col-sm-8 offset-sm-2 offset-md-2 offset-lg-2 col-lg-8" >
@@ -76,132 +78,89 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-98433865-2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'UA-98433865-2');
-</script>
-
-
-    <script type="text/javascript">
-      var videoObject = {
-        container: '#a1',//“#”代表容器的ID，“.”或“”代表容器的class
-        variable: 'player',//该属性必需设置，值等于下面的new chplayer()的对象
-        autoplay:true,//自动播放
-        live:true,
-        video:'http://223.110.243.157/PLTV/3/224/3221226324/index.m3u8'
-      };
-      var player=new ckplayer(videoObject);
-    </script>
-  
   <script>
-    var videourl = "";
-    $('.btn').click(function(){
-    var id = $(this).attr('id');
-      switch(id)
-      {
-        case "playBtn":
-          videourl = $('#playUrl').val();
-          $('#curChannel').text("用户自定义信号源");
-          if(videourl.trim() == "") return;
-          break;
-      }
-    });
+	var video = document.getElementById('video');
+	var changeURL = function (videourl) {
+	  if (Hls.isSupported()) {
+		var hls = new Hls();
+		hls.loadSource(videourl);
+		hls.attachMedia(video);
+		hls.on(Hls.Events.MANIFEST_PARSED, function () {
+		  video.play();
+		});
+	  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+		video.src = videourl;
+		video.addEventListener('loadedmetadata', function () {
+		  video.play();
+		});
+	  }
+	}
+	changeURL('http://183.207.249.7/PLTV/3/224/3221225604/index.m3u8');
+	$('#playBtn').click(function () {
+	  var videourl = $('#playUrl').val().trim();
+	  if (videourl === '') return;
+	   else {
+		changeURL(videourl);
+		$('#curChannel').text('用户自定义信号源');
+	  }
+	});
+	$('.dropdown-item').click(function () {
+	  var videourl = '';
+	  var id = $(this).attr('id');
+	  switch (id)
+		{
+		case '10':
+		  videourl = 'http://183.207.249.7/PLTV/3/224/3221225604/index.m3u8';
+		  $('#curChannel').text('CCTV-5+体育赛事高清[信号源0]');
+		  break;
+		case '11':
+		  videourl = 'http://111.20.33.69/PLTV/88888888/224/3221225761/index.m3u8';
+		  $('#curChannel').text('CCTV-5+体育赛事高清[信号源1]');
+		  break;
+		case '20':
+		  videourl = 'http://183.207.249.15/PLTV/3/224/3221225604/index.m3u8';
+		  $('#curChannel').text('CCTV5+-HD[信号源0]');
+		  break;
+		case '21':
+		  videourl = 'http://223.110.241.204:6610/cntv/live1/hdcctv05plus/hdcctv05plus/index.m3u8';
+		  $('#curChannel').text('CCTV5+-HD[信号源1]');
+		  break;
+		case '30':
+		  videourl = 'http://223.110.241.204:6610/cntv/live1/cctv-5/cctv-5/index.m3u8';
+		  $('#curChannel').text('CCTV5[信号源0]');
+		  break;
+		case '31':
+		  videourl = 'http://223.110.243.136/PLTV/3/224/3221227166/index.m3u8';
+		  $('#curChannel').text('CCTV5[江苏南京移动1]');
+		  break;
+		case '32':
+		  videourl = 'http://183.207.249.6/PLTV/3/224/3221226324/index.m3u8';
+		  $('#curChannel').text('CCTV5[江苏南京移动2]');
+		  break;
+		case '33':
+		  videourl = 'http://223.110.243.157/PLTV/3/224/3221226324/index.m3u8';
+		  $('#curChannel').text('CCTV5[江苏南京移动3]');
+		  break;
+		case '40':
+		  videourl = 'http://223.110.243.168/PLTV/2510088/224/3221227344/1.m3u8';
+		  $('#curChannel').text('风云足球[直播源0]');
+		  break;
+		  //风云足球
+		  // http://223.110.243.168/PLTV/2510088/224/3221227344/1.m3u8  
+		  // 可以用播放器播放，但网页版无效
+		  // case "40":
+		  //   videourl = "http://223.110.241.204:6610/cntv/live1/HD-2500k-1080P-cctv1/HD-2500k-1080P-cctv1/index.m3u8";
+		  //   $('#curChannel').text("CCTV1-综合[信号源0]");
+		  //   break;
+		  // case "41":
+		  //   videourl = "http://223.110.241.204:6610/cntv/live1/cctv-1/cctv-1/index.m3u8";
+		  //   $('#curChannel').text("CCTV1-综合[信号源1]");
+		  //   break;
+	  }
+	  changeURL(videourl);
+	})
 
-    var video = document.getElementById('a1');
-  if(Hls.isSupported()) {
-    var hls = new Hls();
-    hls.loadSource(videourl);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED,function() {
-      video.play();
-  });
- }
- // hls.js is not supported on platforms that do not have Media Source Extensions (MSE) enabled.
- // When the browser has built-in HLS support (check using `canPlayType`), we can provide an HLS manifest (i.e. .m3u8 URL) directly to the video element throught the `src` property.
- // This is using the built-in support of the plain video element, without using hls.js.
- // Note: it would be more normal to wait on the 'canplay' event below however on Safari (where you are most likely to find built-in HLS support) the video.src URL must be on the user-driven
- // white-list before a 'canplay' event will be emitted; the last video event that can be reliably listened-for when the URL is not on the white-list is 'loadedmetadata'.
-  else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = videourl;
-    video.addEventListener('loadedmetadata',function() {
-      video.play();
-    });
-  }
-      </script>
-  
-  <script>
-    var videourl = "";
-    $('.dropdown-item').click(function(){
-      var id = $(this).attr('id');
-    
-    switch(id)
-    {
-      case "10":
-        videourl = "http://183.207.249.7/PLTV/3/224/3221225604/index.m3u8";
-        $('#curChannel').text("CCTV-5+体育赛事高清[信号源0]");
-        break;
-      case "11":
-        videourl = "http://111.20.33.69/PLTV/88888888/224/3221225761/index.m3u8";
-        $('#curChannel').text("CCTV-5+体育赛事高清[信号源1]");
-        break;
-      case "20":
-        videourl = "http://183.207.249.15/PLTV/3/224/3221225604/index.m3u8";
-        $('#curChannel').text("CCTV5+-HD[信号源0]");
-        break;
-      case "21":
-        videourl = "http://223.110.241.204:6610/cntv/live1/hdcctv05plus/hdcctv05plus/index.m3u8";
-        $('#curChannel').text("CCTV5+-HD[信号源1]");
-        break;
-      case "30":
-        videourl = "http://223.110.241.204:6610/cntv/live1/cctv-5/cctv-5/index.m3u8";
-        $('#curChannel').text("CCTV5[信号源0]");
-        break;
-      case "31":
-        videourl = "http://223.110.243.136/PLTV/3/224/3221227166/index.m3u8";
-        $('#curChannel').text("CCTV5[江苏南京移动1]");
-        break;
-      case "32":
-        videourl = "http://183.207.249.6/PLTV/3/224/3221226324/index.m3u8";
-        $('#curChannel').text("CCTV5[江苏南京移动2]");
-        break;
-      case "33":
-        videourl = "http://223.110.243.157/PLTV/3/224/3221226324/index.m3u8";
-        $('#curChannel').text("CCTV5[江苏南京移动3]");
-        break; 
-
-      case "40":
-        videourl = "http://223.110.243.168/PLTV/2510088/224/3221227344/1.m3u8";
-        $('#curChannel').text("风云足球[直播源0]");
-        break;  
-
-
-      //风云足球
-     // http://223.110.243.168/PLTV/2510088/224/3221227344/1.m3u8  
-
-      // 可以用播放器播放，但网页版无效
-      // case "40":
-      //   videourl = "http://223.110.241.204:6610/cntv/live1/HD-2500k-1080P-cctv1/HD-2500k-1080P-cctv1/index.m3u8";
-      //   $('#curChannel').text("CCTV1-综合[信号源0]");
-      //   break;
-      // case "41":
-      //   videourl = "http://223.110.241.204:6610/cntv/live1/cctv-1/cctv-1/index.m3u8";
-      //   $('#curChannel').text("CCTV1-综合[信号源1]");
-      //   break;
-    }
-    var videoObject = {
-        container: '#a1',//“#”代表容器的ID，“.”或“”代表容器的class
-        variable: 'player',//该属性必需设置，值等于下面的new chplayer()的对象
-        autoplay:false,//自动播放
-        live:true,
-        video: videourl//视频地址
-      };
-      var player=new ckplayer(videoObject);
-  })
   </script>
 
 
